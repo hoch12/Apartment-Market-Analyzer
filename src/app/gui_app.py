@@ -183,6 +183,21 @@ class CarPriceApp:
              messagebox.showwarning("Neplatná Konfigurace", str(ve))
              return None
 
+        # --- CHECK YEAR RANGE (Warning only) ---
+        if self.predictor.metadata and brand in self.predictor.metadata:
+            min_y = self.predictor.metadata[brand].get('min_year')
+            max_y = self.predictor.metadata[brand].get('max_year')
+            if min_y and max_y:
+                if year < min_y or year > max_y:
+                    msg = f"Pozor: Pro značku '{brand}' máme data pouze z let {min_y}-{max_y}.\nPredikce pro rok {year} může být nepřesná."
+                    messagebox.showwarning("Upozornění na ročník", msg)
+
+        # --- CHECK MILEAGE VS AGE ---
+        age = current_year - year
+        if age > 5 and mileage < (age * 500): # e.g. 10yr old car < 5000km
+            msg = f"Varování: Nájezd {mileage} km je pro {age} let staré auto extrémně nízký.\n\nModel může predikovat nereálně vysokou cenu (jako u nového vozu)."
+            messagebox.showwarning("Podezřelý nájezd", msg)
+
         # --- USE PREDICTOR ---
         try:
             price = self.predictor.predict_price(year, mileage, brand, fuel, trans)

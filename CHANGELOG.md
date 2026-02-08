@@ -11,9 +11,11 @@
     - **Data Recovery:** Recovered ~2000 listings that were previously discarded due to malformed titles.
 
 ### Added
-- **Robust Error Handling:**
+- **Robust Error Handling & Validation:**
     - Validates user input against reliable `model_metadata.json`.
     - Displays specific error messages (e.g., "Škoda with Diesel not found") instead of crashing.
+    - **Year Range Guard:** Added warnings for years outside the specific brand's training data range.
+    - **Mileage Sanity Check:** Implemented warnings for unrealistically low mileage in older vehicles to prevent over-inflated predictions.
 
 ## [0.3.0] - 2026-02-08
 ### Added
