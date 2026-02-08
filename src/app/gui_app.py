@@ -14,19 +14,24 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 sys.path.append(project_root)
 
 from src.model.inference import PricePredictor
-
-# --- KONFIGURACE ---
-DEPRECIATION_RATE = 0.10  # 10 % ročně
-CURRENT_YEAR = datetime.datetime.now().year
-
+from src.utils.config_loader import ConfigLoader
 
 class CarPriceApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Advanced AI Car Price Estimator")
-        # Increased window size to fit comfortably on Mac
-        self.root.geometry("800x950")
-        self.root.resizable(True, True)  # Allow resizing just in case
+        
+        # Load Config
+        try:
+            self.full_config = ConfigLoader.get_config()
+            self.app_config = self.full_config['app']
+            self.theme = self.app_config['theme']
+        except Exception as e:
+            messagebox.showerror("Config Error", f"Failed to load configuration:\n{e}")
+            sys.exit(1)
+
+        self.root.title(self.app_config.get("title", "Car Price Estimator"))
+        self.root.geometry(self.app_config.get("window_size", "800x950"))
+        self.root.resizable(True, True)
 
         # 1. Load Model
         try:
@@ -37,41 +42,49 @@ class CarPriceApp:
             sys.exit()
 
         # 2. Define Options
-        self.fuel_types = ['Petrol', 'Diesel', 'Electric', 'LPG', 'Hybrid', 'CNG']
-        self.transmissions = ['Manual', 'Automatic']
+        # Assuming these keys match the keys in config.json logic (though explicit list is safer for GUI order)
+        self.fuel_types = list(self.full_config['model']['fuel_mapping'].keys())
+        self.transmissions = list(self.full_config['model']['transmission_mapping'].keys())
         self.brands = self.predictor.get_clean_brands()
 
         # 3. Create Design
         self.create_widgets()
 
-    # get_project_root, load_model_data, get_clean_brands removed as they are now in PricePredictor
-
-
     def create_widgets(self):
         # --- STYLES ---
+        font_family = self.app_config.get("font_family", "Segoe UI")
+        bg_primary = self.theme.get("bg_primary", "#2b2b2b")
+        bg_secondary = self.theme.get("bg_secondary", "#1e1e1e")
+        accent_color = self.theme.get("accent_color", "#007acc")
+        text_main = self.theme.get("text_main", "white")
+        text_secondary = self.theme.get("text_secondary", "#aaaaaa")
+        text_muted = self.theme.get("text_muted", "#dddddd")
+        btn_fg = self.theme.get("button_fg", "black")
+        success_color = self.theme.get("success_color", "#4CAF50")
+
         style = ttk.Style()
         style.theme_use('clam')
-        style.configure("TLabel", font=("Segoe UI", 12), background="#2b2b2b", foreground="white")
-        style.configure("TButton", font=("Segoe UI", 12, "bold"), background="#007acc", foreground="white")
+        style.configure("TLabel", font=(font_family, 12), background=bg_primary, foreground=text_main)
+        style.configure("TButton", font=(font_family, 12, "bold"), background=accent_color, foreground=text_main)
 
-        self.root.configure(bg="#2b2b2b")
+        self.root.configure(bg=bg_primary)
 
         # --- HEADER ---
-        header = tk.Frame(self.root, bg="#1e1e1e", pady=20)
+        header = tk.Frame(self.root, bg=bg_secondary, pady=20)
         header.pack(fill=tk.X)
-        tk.Label(header, text="AI Car Market Analyzer", font=("Segoe UI", 26, "bold"), bg="#1e1e1e", fg="white").pack()
-        tk.Label(header, text="Market Price Prediction & Future Trends", font=("Segoe UI", 11), bg="#1e1e1e",
-                 fg="#aaaaaa").pack()
+        tk.Label(header, text="AI Car Market Analyzer", font=(font_family, 26, "bold"), bg=bg_secondary, fg=text_main).pack()
+        tk.Label(header, text="Market Price Prediction & Future Trends", font=(font_family, 11), bg=bg_secondary,
+                 fg=text_secondary).pack()
 
         # --- FORM (Using PACK for stability on Mac) ---
-        form_frame = tk.Frame(self.root, bg="#2b2b2b", padx=40, pady=20)
+        form_frame = tk.Frame(self.root, bg=bg_primary, padx=40, pady=20)
         form_frame.pack(fill=tk.X)
 
         def add_field(label_text, variable, values=None, is_entry=False):
-            container = tk.Frame(form_frame, bg="#2b2b2b", pady=5)
+            container = tk.Frame(form_frame, bg=bg_primary, pady=5)
             container.pack(fill=tk.X)
 
-            lbl = tk.Label(container, text=label_text, font=("Segoe UI", 12), bg="#2b2b2b", fg="#dddddd", width=20,
+            lbl = tk.Label(container, text=label_text, font=(font_family, 12), bg=bg_primary, fg=text_muted, width=20,
                            anchor="w")
             lbl.pack(side=tk.LEFT)
 
@@ -100,28 +113,28 @@ class CarPriceApp:
         # 4. Fuel
         self.fuel_var = tk.StringVar()
         self.fuel_cb = add_field("Fuel Type:", self.fuel_var, values=self.fuel_types)
-        self.fuel_cb.current(0)
+        if self.fuel_types: self.fuel_cb.current(0)
 
         # 5. Transmission
         self.trans_var = tk.StringVar()
         self.trans_cb = add_field("Transmission:", self.trans_var, values=self.transmissions)
-        self.trans_cb.current(0)
+        if self.transmissions: self.trans_cb.current(0)
 
         # --- BUTTON ---
-        btn_frame = tk.Frame(self.root, bg="#2b2b2b", pady=20)
+        btn_frame = tk.Frame(self.root, bg=bg_primary, pady=20)
         btn_frame.pack(fill=tk.X)
-        # Changed button text color to black (fg="black") as requested
+        
         btn = tk.Button(btn_frame, text="CALCULATE PRICE & PREDICTION", command=self.calculate_all,
-                        bg="#007acc", fg="black", font=("Segoe UI", 13, "bold"), padx=30, pady=12, relief="flat")
+                        bg=accent_color, fg=btn_fg, font=(font_family, 13, "bold"), padx=30, pady=12, relief="flat")
         btn.pack()
 
         # --- RESULT ---
         self.result_label = tk.Label(self.root, text="Enter data and click the button",
-                                     font=("Segoe UI", 18, "bold"), bg="#2b2b2b", fg="#4CAF50")
+                                     font=(font_family, 18, "bold"), bg=bg_primary, fg=success_color)
         self.result_label.pack(pady=10)
 
         # --- GRAPH ---
-        self.graph_frame = tk.Frame(self.root, bg="#2b2b2b")
+        self.graph_frame = tk.Frame(self.root, bg=bg_primary)
         self.graph_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
     def calculate_all(self):
@@ -174,29 +187,37 @@ class CarPriceApp:
     def plot_future_trend(self, start_price):
         for widget in self.graph_frame.winfo_children():
             widget.destroy()
+            
+        bg_primary = self.theme.get("bg_primary", "#2b2b2b")
+        text_main = self.theme.get("text_main", "white")
+        accent_color = self.theme.get("accent_color", "#007acc")
+        success_color = self.theme.get("success_color", "#4CAF50")
 
-        future_data = self.predictor.calculate_future_value(start_price, years=5, depreciation_rate=DEPRECIATION_RATE)
+        # Config loaded params
+        # future_values calculation now uses defaults from config inside inference.py if not passed
+        # OR we pass them explicitly
+        future_data = self.predictor.calculate_future_value(start_price) 
         years = [d['year'] for d in future_data]
         prices = [d['price'] for d in future_data]
 
         # Použití Figure objektu místo pyplot (předejití memory leak)
         fig = Figure(figsize=(6, 4), dpi=100)
-        fig.patch.set_facecolor('#2b2b2b')
+        fig.patch.set_facecolor(bg_primary)
         ax = fig.add_subplot(111)
-        ax.set_facecolor('#2b2b2b')
+        ax.set_facecolor(bg_primary)
 
-        ax.plot(years, prices, marker='o', linestyle='-', color='#007acc', linewidth=3, markersize=8)
+        ax.plot(years, prices, marker='o', linestyle='-', color=accent_color, linewidth=3, markersize=8)
 
         # Barvy grafu (aby byly vidět na tmavém pozadí)
         for spine in ax.spines.values():
-            spine.set_color('white')
+            spine.set_color(text_main)
 
-        ax.tick_params(colors='white')
-        ax.yaxis.label.set_color('white')
-        ax.xaxis.label.set_color('white')
-        ax.set_title(f"Price Trend Prediction ({years[0]}-{years[-1]})", fontsize=12, color='white')
-        ax.set_ylabel("Price (CZK)", color='white')
-        ax.grid(True, linestyle='--', alpha=0.3, color='white')
+        ax.tick_params(colors=text_main)
+        ax.yaxis.label.set_color(text_main)
+        ax.xaxis.label.set_color(text_main)
+        ax.set_title(f"Price Trend Prediction ({years[0]}-{years[-1]})", fontsize=12, color=text_main)
+        ax.set_ylabel("Price (CZK)", color=text_main)
+        ax.grid(True, linestyle='--', alpha=0.3, color=text_main)
 
         # Format Y-axis to avoid scientific notation and use 'k' or 'M'
         def currency_formatter(x, pos):
@@ -211,7 +232,7 @@ class CarPriceApp:
         for i, price in enumerate(prices):
             formatted_k = f"{int(price / 1000)}k"
             ax.annotate(formatted_k, (years[i], prices[i]), textcoords="offset points", xytext=(0, 10), ha='center',
-                        color="#4CAF50", fontweight='bold')
+                        color=success_color, fontweight='bold')
 
         canvas = FigureCanvasTkAgg(fig, master=self.graph_frame)
         canvas.draw()

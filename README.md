@@ -18,7 +18,7 @@ Car-Market-Analyzer/
 │   ├── raw/               # Scraped unprocessed data
 │   └── processed/         # Cleaned data for model training
 ├── docs/                  # Detailed documentation and design analysis
-├── notebooks/             # Jupyter Notebooks for EDA and model training
+├── notebooks/             # Jupyter Notebooks for EDA and model training [READ MORE](notebooks/README.md)
 ├── src/
 │   ├── app/
 │   │   └── gui_app.py     # Main entry point for the GUI application
@@ -26,7 +26,7 @@ Car-Market-Analyzer/
 │   │   ├── inference.py   # Prediction logic and internal API
 │   │   └── *.pkl          # Trained model artifacts
 │   └── scraper/
-│       └── sauto_scraper.py # Web scraping module
+│       └── sauto_scraper.py # Web scraping module [READ MORE](src/scraper/README.md)
 ├── tests/                 # Unit tests
 ├── requirements.txt       # Python dependencies
 └── README.md              # Project documentation

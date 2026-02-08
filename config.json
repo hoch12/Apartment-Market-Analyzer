@@ -11,6 +11,39 @@
   },
   "paths": {
     "output_folder": "data/raw",
-    "output_filename": "sauto_raw_data.csv"
+    "output_filename": "sauto_raw_data.csv",
+    "model_filename": "car_price_model.pkl",
+    "columns_filename": "model_columns.pkl"
+  },
+  "app": {
+    "window_size": "800x950",
+    "title": "Advanced AI Car Price Estimator",
+    "font_family": "Segoe UI",
+    "theme": {
+      "bg_primary": "#2b2b2b",
+      "bg_secondary": "#1e1e1e",
+      "accent_color": "#007acc",
+      "text_main": "white",
+      "text_secondary": "#aaaaaa",
+      "text_muted": "#dddddd",
+      "button_fg": "black",
+      "success_color": "#4CAF50"
+    }
+  },
+  "model": {
+    "depreciation_rate": 0.10,
+    "future_projection_years": 5,
+    "fuel_mapping": {
+      "Petrol": null,
+      "Diesel": "fuel_Nafta",
+      "Electric": "fuel_Elektro",
+      "Hybrid": "fuel_Hybridní",
+      "LPG": "fuel_Other",
+      "CNG": "fuel_Other"
+    },
+    "transmission_mapping": {
+      "Manual": "transmission_Manuální",
+      "Automatic": null
+    }
   }
 }

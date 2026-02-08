@@ -8,6 +8,14 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
+import sys
+
+# Init path to access shared utils
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(current_dir))
+sys.path.append(project_root)
+
+from src.utils.config_loader import ConfigLoader
 
 # --- CONSTANTS ---
 STATE_FILE = "scraper_state.json"
@@ -17,16 +25,6 @@ def get_project_root():
     """Returns the absolute path to the project root directory."""
     current_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.dirname(os.path.dirname(current_dir))
-
-
-def load_config():
-    """Loads configuration from config.json."""
-    root = get_project_root()
-    config_path = os.path.join(root, 'config.json')
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Configuration file not found at: {config_path}")
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
 
 
 def load_state():
@@ -109,7 +107,7 @@ def extract_ad_data_flexible(element):
 
 def main():
     try:
-        config = load_config()
+        config = ConfigLoader.get_config()
     except Exception as e:
         print(f"Error loading config: {e}")
         return
