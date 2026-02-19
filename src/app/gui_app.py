@@ -16,7 +16,7 @@ sys.path.append(project_root)
 from src.model.inference import PricePredictor
 from src.utils.config_loader import ConfigLoader
 
-class CarPriceApp:
+class ApartmentPriceApp:
     def __init__(self, root):
         self.root = root
         
@@ -29,38 +29,30 @@ class CarPriceApp:
             messagebox.showerror("Config Error", f"Failed to load configuration:\n{e}")
             sys.exit(1)
 
-        self.root.title(self.app_config.get("title", "Car Price Estimator"))
-        self.root.geometry(self.app_config.get("window_size", "800x950"))
+        self.root.title(self.app_config.get("title", "Apartment Market Analyzer"))
+        self.root.geometry(self.app_config.get("window_size", "850x900"))
         self.root.resizable(True, True)
 
-        # 1. Load Model
-        try:
-            self.predictor = PricePredictor()
-            print("✅ Model and columns loaded successfully.")
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load model!\n{e}")
-            sys.exit()
+        # 1. Load Model (Mock or Real)
+        self.predictor = PricePredictor()
 
         # 2. Define Options
-        # Assuming these keys match the keys in config.json logic (though explicit list is safer for GUI order)
-        self.fuel_types = list(self.full_config['model']['fuel_mapping'].keys())
-        self.transmissions = list(self.full_config['model']['transmission_mapping'].keys())
-        self.brands = self.predictor.get_clean_brands()
+        self.regions = self.predictor.get_regions()
+        self.dispositions = self.predictor.get_dispositions()
 
         # 3. Create Design
         self.create_widgets()
 
     def create_widgets(self):
-        # --- STYLES ---
         font_family = self.app_config.get("font_family", "Segoe UI")
-        bg_primary = self.theme.get("bg_primary", "#2b2b2b")
-        bg_secondary = self.theme.get("bg_secondary", "#1e1e1e")
-        accent_color = self.theme.get("accent_color", "#007acc")
-        text_main = self.theme.get("text_main", "white")
-        text_secondary = self.theme.get("text_secondary", "#aaaaaa")
-        text_muted = self.theme.get("text_muted", "#dddddd")
-        btn_fg = self.theme.get("button_fg", "black")
-        success_color = self.theme.get("success_color", "#4CAF50")
+        bg_primary = self.theme.get("bg_primary", "#1a1a1a")
+        bg_secondary = self.theme.get("bg_secondary", "#2c3e50")
+        accent_color = self.theme.get("accent_color", "#e67e22")
+        text_main = self.theme.get("text_main", "#ecf0f1")
+        text_secondary = self.theme.get("text_secondary", "#bdc3c7")
+        text_muted = self.theme.get("text_muted", "#95a5a6")
+        btn_fg = self.theme.get("button_fg", "white")
+        success_color = self.theme.get("success_color", "#27ae60")
 
         style = ttk.Style()
         style.theme_use('clam')
@@ -72,16 +64,16 @@ class CarPriceApp:
         # --- HEADER ---
         header = tk.Frame(self.root, bg=bg_secondary, pady=20)
         header.pack(fill=tk.X)
-        tk.Label(header, text="AI Car Market Analyzer", font=(font_family, 26, "bold"), bg=bg_secondary, fg=text_main).pack()
-        tk.Label(header, text="Market Price Prediction & Future Trends", font=(font_family, 11), bg=bg_secondary,
+        tk.Label(header, text="Real Estate Market Analyzer", font=(font_family, 26, "bold"), bg=bg_secondary, fg=text_main).pack()
+        tk.Label(header, text="Analýza cen bytů a predikce tržního vývoje", font=(font_family, 11), bg=bg_secondary,
                  fg=text_secondary).pack()
 
-        # --- FORM (Using PACK for stability on Mac) ---
+        # --- FORM ---
         form_frame = tk.Frame(self.root, bg=bg_primary, padx=40, pady=20)
         form_frame.pack(fill=tk.X)
 
         def add_field(label_text, variable, values=None, is_entry=False):
-            container = tk.Frame(form_frame, bg=bg_primary, pady=5)
+            container = tk.Frame(form_frame, bg=bg_primary, pady=8)
             container.pack(fill=tk.X)
 
             lbl = tk.Label(container, text=label_text, font=(font_family, 12), bg=bg_primary, fg=text_muted, width=20,
@@ -97,39 +89,29 @@ class CarPriceApp:
                 widget.pack(side=tk.LEFT, padx=10)
                 return widget
 
-        # 1. Brand
-        self.brand_var = tk.StringVar()
-        self.brand_cb = add_field("Značka vozidla:", self.brand_var, values=self.brands)
-        if self.brands: self.brand_cb.current(0)
+        # 1. Region
+        self.region_var = tk.StringVar()
+        self.region_cb = add_field("Kraj / Lokalita:", self.region_var, values=self.regions)
+        if self.regions: self.region_cb.current(0)
 
-        # 2. Year
-        self.year_entry = add_field("Rok výroby:", None, is_entry=True)
-        self.year_entry.insert(0, str(datetime.datetime.now().year - 4))
+        # 2. Disposition
+        self.disp_var = tk.StringVar()
+        self.disp_cb = add_field("Dispozice:", self.disp_var, values=self.dispositions)
+        if self.dispositions: self.disp_cb.current(0)
 
-        # 3. Mileage
-        self.mileage_entry = add_field("Nájezd (km):", None, is_entry=True)
-        self.mileage_entry.insert(0, "65000")
-
-        # 4. Fuel
-        self.fuel_var = tk.StringVar()
-        self.fuel_cb = add_field("Palivo:", self.fuel_var, values=self.fuel_types)
-        if self.fuel_types: self.fuel_cb.current(0)
-
-        # 5. Transmission
-        self.trans_var = tk.StringVar()
-        self.trans_cb = add_field("Převodovka:", self.trans_var, values=self.transmissions)
-        if self.transmissions: self.trans_cb.current(0)
+        # 3. Area
+        self.area_entry = add_field("Plocha (m²):", None, is_entry=True)
+        self.area_entry.insert(0, "65")
 
         # --- BUTTON ---
         btn_frame = tk.Frame(self.root, bg=bg_primary, pady=20)
         btn_frame.pack(fill=tk.X)
         
-        btn = tk.Button(btn_frame, text="SPOČÍTAT CENU A PREDIKCI", command=self.calculate_all,
-                        bg=accent_color, fg=btn_fg, font=(font_family, 13, "bold"), padx=30, pady=12, relief="flat")
-        btn.pack()
+        btn = ttk.Button(btn_frame, text="ANALYZOVAT TRŽNÍ CENU", command=self.calculate_all, style="TButton", cursor="hand2")
+        btn.pack(ipady=10, ipadx=20)
 
         # --- RESULT ---
-        self.result_label = tk.Label(self.root, text="Zadejte údaje a klikněte na tlačítko",
+        self.result_label = tk.Label(self.root, text="Zadejte parametry nemovitosti",
                                      font=(font_family, 18, "bold"), bg=bg_primary, fg=success_color)
         self.result_label.pack(pady=10)
 
@@ -137,111 +119,104 @@ class CarPriceApp:
         self.graph_frame = tk.Frame(self.root, bg=bg_primary)
         self.graph_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
+    def validate_inputs(self, area, disp):
+        # Approximate reasonable ranges based on data analysis
+        # (min_area, max_area)
+        limits = {
+            "1+kk": (10, 100),
+            "1+1": (20, 80),
+            "2+kk": (25, 120),
+            "2+1": (30, 100),
+            "3+kk": (40, 180),
+            "3+1": (50, 150),
+            "4+kk": (60, 300),
+            "4+1": (70, 200),
+            "5+kk": (90, 400),
+            "5+1": (90, 300),
+            "6+kk": (140, 600)
+        }
+        
+        if disp in limits:
+            min_a, max_a = limits[disp]
+            if area < min_a:
+                return False, f"Plocha {area} m² je pro dispozici {disp} podezřele malá.\nObvyklé minimum je cca {min_a} m²."
+            if area > max_a:
+                return False, f"Plocha {area} m² je pro dispozici {disp} podezřele velká.\nObvyklé maximum je cca {max_a} m²."
+        
+        return True, ""
+
     def calculate_all(self):
         try:
-            current_price = self.predict_current_price()
+            current_price = self.get_prediction()
             if current_price is None: return
 
             formatted = f"{int(current_price):,}".replace(",", " ")
-            self.result_label.config(text=f"Odhad ceny: {formatted} Kč")
+            self.result_label.config(text=f"Odhadovaná cena: {formatted} Kč")
 
             self.plot_future_trend(current_price)
 
         except Exception as e:
-            messagebox.showerror("Kritická chyba", str(e))
+            messagebox.showerror("Chyba", str(e))
 
-    def predict_current_price(self):
-        # --- VALIDATION ---
+    def get_prediction(self):
         try:
-            year = int(self.year_entry.get())
-            mileage = int(self.mileage_entry.get())
+            area = float(self.area_entry.get())
         except ValueError:
-            messagebox.showwarning("Chyba", "Rok a nájezd musí být čísla!")
+            messagebox.showwarning("Chyba", "Plocha musí být číslo!")
             return None
 
-        current_year = datetime.datetime.now().year
-        if year < 1980 or year > current_year + 1:
-            messagebox.showwarning("Chyba", f"Rok musí být mezi 1980 a {current_year + 1}.")
+        if area <= 0 or area > 1000:
+            messagebox.showwarning("Chyba", "Zadejte reálnou plochu bytu.")
             return None
 
-        if mileage < 0 or mileage > 2000000:
-            messagebox.showwarning("Chyba", "Nájezd je mimo reálný rozsah.")
-            return None
+        # Logic Validation (Area vs Disposition)
+        disp = self.disp_var.get()
+        valid, msg = self.validate_inputs(area, disp)
+        if not valid:
+             # Ask user if they want to proceed despite the warning
+            response = messagebox.askyesno("Varování - Neobvyklá hodnota", 
+                                           f"{msg}\n\nChcete přesto pokračovat?")
+            if not response:
+                return None
 
-        brand = self.brand_var.get()
-        fuel = self.fuel_var.get()
-        trans = self.trans_var.get()
+        region = self.region_var.get()
 
-        if not brand:
-            messagebox.showwarning("Chyba", "Vyberte značku vozidla!")
-            return None
-
-        # --- VALIDATE INPUT ---
         try:
-            self.predictor.validate_input(brand, fuel, trans)
-        except ValueError as ve:
-             messagebox.showwarning("Neplatná Konfigurace", str(ve))
-             return None
-
-        # --- CHECK YEAR RANGE (Warning only) ---
-        if self.predictor.metadata and brand in self.predictor.metadata:
-            min_y = self.predictor.metadata[brand].get('min_year')
-            max_y = self.predictor.metadata[brand].get('max_year')
-            if min_y and max_y:
-                if year < min_y or year > max_y:
-                    msg = f"Pozor: Pro značku '{brand}' máme data pouze z let {min_y}-{max_y}.\nPredikce pro rok {year} může být nepřesná."
-                    messagebox.showwarning("Upozornění na ročník", msg)
-
-        # --- CHECK MILEAGE VS AGE ---
-        age = current_year - year
-        if age > 5 and mileage < (age * 500): # e.g. 10yr old car < 5000km
-            msg = f"Varování: Nájezd {mileage} km je pro {age} let staré auto extrémně nízký.\n\nModel může predikovat nereálně vysokou cenu (jako u nového vozu)."
-            messagebox.showwarning("Podezřelý nájezd", msg)
-
-        # --- USE PREDICTOR ---
-        try:
-            price = self.predictor.predict_price(year, mileage, brand, fuel, trans)
-            return price
+            return self.predictor.predict_price(area, disp, region)
         except Exception as e:
-            messagebox.showerror("Chyba Predikce", str(e))
+            # For demonstration if model is not trained yet:
+            # return area * 100000 
+            messagebox.showerror("Model Error", f"Model není připraven na tato data nebo nebyl nalezen.\n{e}")
             return None
 
     def plot_future_trend(self, start_price):
         for widget in self.graph_frame.winfo_children():
             widget.destroy()
             
-        bg_primary = self.theme.get("bg_primary", "#2b2b2b")
-        text_main = self.theme.get("text_main", "white")
-        accent_color = self.theme.get("accent_color", "#007acc")
-        success_color = self.theme.get("success_color", "#4CAF50")
+        bg_primary = self.theme.get("bg_primary", "#1a1a1a")
+        text_main = self.theme.get("text_main", "#ecf0f1")
+        accent_color = self.theme.get("accent_color", "#e67e22")
+        success_color = self.theme.get("success_color", "#27ae60")
 
-        # Config loaded params
-        # future_values calculation now uses defaults from config inside inference.py if not passed
-        # OR we pass them explicitly
-        future_data = self.predictor.calculate_future_value(start_price) 
+        future_data = self.predictor.calculate_future_value(start_price, years=10, growth_rate=0.04) 
         years = [d['year'] for d in future_data]
         prices = [d['price'] for d in future_data]
 
-        # Použití Figure objektu místo pyplot (předejití memory leak)
         fig = Figure(figsize=(6, 4), dpi=100)
         fig.patch.set_facecolor(bg_primary)
         ax = fig.add_subplot(111)
         ax.set_facecolor(bg_primary)
 
-        ax.plot(years, prices, marker='o', linestyle='-', color=accent_color, linewidth=3, markersize=8)
+        ax.plot(years, prices, marker='s', linestyle='-', color=accent_color, linewidth=2, markersize=6)
 
-        # Barvy grafu (aby byly vidět na tmavém pozadí)
         for spine in ax.spines.values():
             spine.set_color(text_main)
 
         ax.tick_params(colors=text_main)
-        ax.yaxis.label.set_color(text_main)
-        ax.xaxis.label.set_color(text_main)
-        ax.set_title(f"Predikce vývoje ceny ({years[0]}-{years[-1]})", fontsize=12, color=text_main)
-        ax.set_ylabel("Cena (Kč)", color=text_main)
-        ax.grid(True, linestyle='--', alpha=0.3, color=text_main)
+        ax.set_title("Očekávaný vývoj hodnoty nemovitosti (10 let)", fontsize=12, color=text_main)
+        ax.set_ylabel("Hodnota (Kč)", color=text_main)
+        ax.grid(True, linestyle='--', alpha=0.2, color=text_main)
 
-        # Format Y-axis to avoid scientific notation and use 'k' or 'M'
         def currency_formatter(x, pos):
             if x >= 1_000_000:
                 return f'{x*1e-6:.1f}M'
@@ -250,18 +225,11 @@ class CarPriceApp:
 
         ax.yaxis.set_major_formatter(FuncFormatter(currency_formatter))
 
-        # Popisky
-        for i, price in enumerate(prices):
-            formatted_k = f"{int(price / 1000)}k"
-            ax.annotate(formatted_k, (years[i], prices[i]), textcoords="offset points", xytext=(0, 10), ha='center',
-                        color=success_color, fontweight='bold')
-
         canvas = FigureCanvasTkAgg(fig, master=self.graph_frame)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-
 if __name__ == "__main__":
     root = tk.Tk()
-    app = CarPriceApp(root)
+    app = ApartmentPriceApp(root)
     root.mainloop()

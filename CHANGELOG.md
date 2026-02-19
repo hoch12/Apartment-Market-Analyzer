@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.6.0] - 2026-02-19
+### Changed
+- **Total Project Pivot:**
+    - Converted "Car Market Analyzer" to **"Apartment Market Analyzer"**.
+    - Replaced car-related logic with real estate analysis (Apartments/Byty).
+- **Architecture Refactoring:**
+    - Created `reality_scraper.py` targeting real estate portals instead of car marketplaces.
+    - Refactored `train_model.py` and `inference.py` to handle features like Area (m2), Disposition, and Region.
+    - Completely redesigned `gui_app.py` with a new "Real Estate" theme and relevant property inputs.
+- **Documentation:**
+    - Updated `README.md` and internal documentation to reflect the new real estate focus.
+    - Updated `config.json` with property-specific metadata and aesthetics.
+
+## [0.5.0] - 2026-02-19
+### Added
+- **Data Acquisition Procedure:**
+    - Created a new workflow `/download-data` for expanding the dataset.
+    - Updated `src/scraper/README.md` with instructions on how to download more data.
+    - Added a "Data Maintenance & Expansion" section to the main documentation.
+    - Implemented a resume logic reminder in the configuration guide.
+
 ## [0.4.0] - 2026-02-08
 ### Changed
 - **Localization:**

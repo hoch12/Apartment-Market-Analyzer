@@ -1,9 +1,9 @@
 {
   "scraper": {
-    "base_url": "https://www.sauto.cz/inzerce/osobni",
-    "num_pages": 100,
-    "min_delay_seconds": 3,
-    "max_delay_seconds": 6
+    "base_url": "https://reality.idnes.cz/s/prodej/byty/",
+    "num_pages": 500,
+    "min_delay_seconds": 2,
+    "max_delay_seconds": 5
   },
   "driver": {
     "headless": false,
@@ -11,39 +11,52 @@
   },
   "paths": {
     "output_folder": "data/raw",
-    "output_filename": "sauto_raw_data.csv",
-    "model_filename": "car_price_model.pkl",
-    "columns_filename": "model_columns.pkl"
+    "output_filename": "apartments_raw_data.csv",
+    "model_filename": "apartment_price_model.pkl",
+    "columns_filename": "apartment_columns.pkl"
   },
   "app": {
-    "window_size": "800x950",
-    "title": "Advanced AI Car Price Estimator",
+    "window_size": "850x900",
+    "title": "Real Estate Market Analyzer - Apartmány",
     "font_family": "Segoe UI",
     "theme": {
-      "bg_primary": "#2b2b2b",
-      "bg_secondary": "#1e1e1e",
-      "accent_color": "#007acc",
-      "text_main": "white",
-      "text_secondary": "#aaaaaa",
-      "text_muted": "#dddddd",
-      "button_fg": "black",
-      "success_color": "#4CAF50"
+      "bg_primary": "#1a1a1a",
+      "bg_secondary": "#2c3e50",
+      "accent_color": "#e67e22",
+      "text_main": "#ecf0f1",
+      "text_secondary": "#bdc3c7",
+      "text_muted": "#95a5a6",
+      "button_fg": "white",
+      "success_color": "#27ae60"
     }
   },
   "model": {
-    "depreciation_rate": 0.10,
-    "future_projection_years": 5,
-    "fuel_mapping": {
-      "Benzín": "fuel_Benzín",
-      "Nafta": "fuel_Nafta",
-      "Elektro": "fuel_Elektro",
-      "Hybrid": "fuel_Hybridní",
-      "LPG": "fuel_LPG",
-      "CNG": "fuel_CNG"
+    "disposition_mapping": {
+      "1+kk": "disp_1kk",
+      "1+1": "disp_11",
+      "2+kk": "disp_2kk",
+      "2+1": "disp_21",
+      "3+kk": "disp_3kk",
+      "3+1": "disp_31",
+      "4+kk": "disp_4kk",
+      "4+1": "disp_41",
+      "5+kk": "disp_5kk"
     },
-    "transmission_mapping": {
-      "Manuální": "transmission_Manuální",
-      "Automatická": "transmission_Automatická"
-    }
+    "regions": [
+      "Praha",
+      "Středočeský",
+      "Jihočeský",
+      "Plzeňský",
+      "Karlovarský",
+      "Ústecký",
+      "Liberecký",
+      "Královéhradecký",
+      "Pardubický",
+      "Vysočina",
+      "Jihomoravský",
+      "Olomoucký",
+      "Zlínský",
+      "Moravskoslezský"
+    ]
   }
 }

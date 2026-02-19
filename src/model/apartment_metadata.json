@@ -1,0 +1,36 @@
+{
+  "dispositions": [
+    "1+1",
+    "1+kk",
+    "2+1",
+    "2+kk",
+    "3+1",
+    "3+kk",
+    "4+1",
+    "4+kk",
+    "5+1",
+    "5+kk",
+    "6+kk",
+    "Other"
+  ],
+  "regions": [
+    "Jihomoravský kraj",
+    "Jihočeský kraj",
+    "Karlovarský kraj",
+    "Kraj Vysočina",
+    "Královéhradecký kraj",
+    "Liberecký kraj",
+    "Moravskoslezský kraj",
+    "Olomoucký kraj",
+    "Other",
+    "Pardubický kraj",
+    "Plzeňský kraj",
+    "Praha",
+    "Středočeský kraj",
+    "Zahraničí",
+    "Zlínský kraj",
+    "Ústecký kraj"
+  ],
+  "min_area": 11,
+  "max_area": 547
+}

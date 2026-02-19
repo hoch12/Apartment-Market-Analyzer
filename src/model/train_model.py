@@ -5,91 +5,137 @@ import os
 import joblib
 import json
 from sklearn.ensemble import RandomForestRegressor
-
-# Increase recursion depth just in case, though usually not needed for simple RF
 import sys
+
+# Increase recursion depth if needed
 sys.setrecursionlimit(2000)
 
 # --- CONFIG ---
-RAW_DATA_PATH = 'data/raw/sauto_raw_data.csv'
-MODEL_PATH = 'src/model/car_price_model.pkl'
-COLUMNS_PATH = 'src/model/model_columns.pkl'
-METADATA_PATH = 'src/model/model_metadata.json'
+RAW_DATA_PATH = 'data/raw/apartments_raw_data.csv'
+MODEL_PATH = 'src/model/apartment_price_model.pkl'
+COLUMNS_PATH = 'src/model/apartment_columns.pkl'
+METADATA_PATH = 'src/model/apartment_metadata.json'
 
-def parse_year(text):
-    # Try finding 4 digits at start of string (e.g. "2022, ...")
-    match_start = re.match(r'^\s*(\d{4})', str(text))
-    if match_start:
-        return int(match_start.group(1))
-    
-    # Fallback: look for "Rok výroby: 2022"
-    match = re.search(r'Rok výroby:\s*(\d{4})', str(text))
+def parse_area(title):
+    # Matches "54 m²" or "54m2"
+    match = re.search(r'(\d+)\s*m[²2]', str(title))
     if match:
         return int(match.group(1))
-        
     return None
 
-def parse_mileage(text):
-    # Try finding "XX XXX km" anywhere
-    # Matches "18 455 km", "146 589 km"
-    # Remove spaces inside the number group
-    match = re.search(r'(\d[\d\s]*)\s*km', str(text))
+def parse_disposition(title):
+    # Matches "2+kk", "1+1", "3+1" etc.
+    match = re.search(r'(\d\+[\w]{1,2})', str(title))
     if match:
-        clean_num = match.group(1).replace(' ', '').replace('\xa0', '')
-        try:
-            return int(clean_num)
-        except:
-            return None
-    return None
-
-def parse_fuel(text):
-    fuels = ['Benzín', 'Nafta', 'Elektro', 'LPG', 'Hybridní', 'CNG']
-    for f in fuels:
-        if f in str(text):
-            return f
+        return match.group(1)
     return 'Other'
 
-def parse_transmission(text):
-    if 'Automatická' in str(text):
-        return 'Automatická'
-    return 'Manuální'
-
-def clean_brand(title):
-    brand = None
+def clean_region(location):
+    location = str(location)
     
-    # Filter garbage (URLs, etc)
-    if 'http' in str(title) or 'www' in str(title) or '.cz' in str(title):
-        # Try to extract brand from URL structure: .../detail/brand/model/...
-        try:
-            parts = str(title).split('/')
-            if 'detail' in parts:
-                idx = parts.index('detail')
-                if len(parts) > idx + 1:
-                    brand = parts[idx + 1]
-        except:
-            pass
-    else:
-        # Normal case: split by newline/space
-        if pd.isna(title):
-             return 'Unknown'
-        first_line = str(title).split('\n')[0]
-        brand = first_line.split()[0].replace(',', '').strip()
+    # Map of major cities/districts to regions
+    city_to_region = {
+        'Praha': 'Praha',
+        'Brno': 'Jihomoravský kraj',
+        'Ostrava': 'Moravskoslezský kraj',
+        'Plzeň': 'Plzeňský kraj',
+        'Liberec': 'Liberecký kraj',
+        'Olomouc': 'Olomoucký kraj',
+        'České Budějovice': 'Jihočeský kraj',
+        'Hradec Králové': 'Královéhradecký kraj',
+        'Ústí nad Labem': 'Ústecký kraj',
+        'Pardubice': 'Pardubický kraj',
+        'Karlovy Vary': 'Karlovarský kraj',
+        'Jihlava': 'Kraj Vysočina',
+        'Zlín': 'Zlínský kraj',
+        'Středočeský': 'Středočeský kraj',
+        'Kladno': 'Středočeský kraj',
+        'Mladá Boleslav': 'Středočeský kraj',
+        'Příbram': 'Středočeský kraj',
+        'Kolín': 'Středočeský kraj',
+        'Benešov': 'Středočeský kraj',
+        'Beroun': 'Středočeský kraj',
+        'Mělník': 'Středočeský kraj',
+        'Most': 'Ústecký kraj',
+        'Děčín': 'Ústecký kraj',
+        'Teplice': 'Ústecký kraj',
+        'Chomutov': 'Ústecký kraj',
+        'Frýdek-Místek': 'Moravskoslezský kraj',
+        'Karviná': 'Moravskoslezský kraj',
+        'Opava': 'Moravskoslezský kraj',
+        'Havířov': 'Moravskoslezský kraj',
+        'Třinec': 'Moravskoslezský kraj',
+        'Znojmo': 'Jihomoravský kraj',
+        'Břeclav': 'Jihomoravský kraj',
+        'Hodonín': 'Jihomoravský kraj',
+        'Vyškov': 'Jihomoravský kraj',
+        'Blansko': 'Jihomoravský kraj',
+        'Prostějov': 'Olomoucký kraj',
+        'Přerov': 'Olomoucký kraj',
+        'Šumperk': 'Olomoucký kraj',
+        'Vsetín': 'Zlínský kraj',
+        'Uherské Hradiště': 'Zlínský kraj',
+        'Kroměříž': 'Zlínský kraj',
+        'Tábor': 'Jihočeský kraj',
+        'Písek': 'Jihočeský kraj',
+        'Strakonice': 'Jihočeský kraj',
+        'Jindřichův Hradec': 'Jihočeský kraj',
+        'Český Krumlov': 'Jihočeský kraj',
+        'Cheb': 'Karlovarský kraj',
+        'Sokolov': 'Karlovarský kraj',
+        'Třebíč': 'Kraj Vysočina',
+        'Havlíčkův Brod': 'Kraj Vysočina',
+        'Žďár nad Sázavou': 'Kraj Vysočina',
+        'Pelhřimov': 'Kraj Vysočina',
+        'Chrudim': 'Pardubický kraj',
+        'Svitavy': 'Pardubický kraj',
+        'Ústí nad Orlicí': 'Pardubický kraj',
+        'Jablonec nad Nisou': 'Liberecký kraj',
+        'Česká Lípa': 'Liberecký kraj',
+        'Semily': 'Liberecký kraj',
+        'Trutnov': 'Královéhradecký kraj',
+        'Náchod': 'Královéhradecký kraj',
+        'Jičín': 'Královéhradecký kraj',
+        'Rychnov nad Kněžnou': 'Královéhradecký kraj',
+        'Tachov': 'Plzeňský kraj',
+        'Klatovy': 'Plzeňský kraj',
+        'Domažlice': 'Plzeňský kraj',
+        'Rokycany': 'Plzeňský kraj'
+    }
 
-    if not brand: return None
+    # First check explicit foreign countries to avoid misclassification
+    foreign_countries = ['Španělsko', 'Egypt', 'Albánie', 'Bulharsko', 'Chorvatsko', 'Slovensko', 'Rakousko', 'Německo', 'Kapverdy', 'Spojené arabské emiráty', 'Thajsko', 'Indonézie', 'Kypr', 'Černá Hora']
+    for country in foreign_countries:
+        if country in location:
+            return 'Zahraničí'
 
-    # Normalize
-    brand = brand.capitalize()
-    if brand.lower() == 'bmw': return 'BMW'
-    if brand.lower() == 'mercedes-benz': return 'Mercedes-Benz'
-    if brand.lower() == 'vw' or brand.lower() == 'volkswagen': return 'Volkswagen'
-    if brand.lower() == 'skoda' or brand.lower() == 'škoda': return 'Škoda'
-    
-    return brand
+    # Check for cities in the location string
+    for city, region in city_to_region.items():
+        if city in location:
+            return region
+
+    # Fallback checks for keywords
+    if 'Praha' in location: return 'Praha'
+    if 'Středočeský' in location: return 'Středočeský kraj'
+    if 'Jihočeský' in location: return 'Jihočeský kraj'
+    if 'Plzeňský' in location: return 'Plzeňský kraj'
+    if 'Karlovarský' in location: return 'Karlovarský kraj'
+    if 'Ústecký' in location: return 'Ústecký kraj'
+    if 'Liberecký' in location: return 'Liberecký kraj'
+    if 'Královéhradecký' in location: return 'Královéhradecký kraj'
+    if 'Pardubický' in location: return 'Pardubický kraj'
+    if 'Vysočina' in location: return 'Kraj Vysočina'
+    if 'Jihomoravský' in location: return 'Jihomoravský kraj'
+    if 'Olomoucký' in location: return 'Olomoucký kraj'
+    if 'Zlínský' in location: return 'Zlínský kraj'
+    if 'Moravskoslezský' in location: return 'Moravskoslezský kraj'
+
+    return 'Other'
 
 def train():
-    print("Loading data...")
+    print("Loading apartment data...")
     if not os.path.exists(RAW_DATA_PATH):
-        print(f"Error: {RAW_DATA_PATH} not found.")
+        print(f"Error: {RAW_DATA_PATH} not found. Run scraper first.")
         return
 
     df = pd.read_csv(RAW_DATA_PATH)
@@ -97,68 +143,44 @@ def train():
 
     # 1. Feature Extraction
     print("Extracting features...")
-    df['year'] = df['description'].apply(parse_year)
-    df['mileage'] = df['description'].apply(parse_mileage)
-    df['fuel'] = df['description'].apply(parse_fuel)
-    df['transmission'] = df['description'].apply(parse_transmission)
-    df['brand'] = df['title'].apply(clean_brand)
+    df['area'] = df['title'].apply(parse_area)
+    df['disposition'] = df['title'].apply(parse_disposition)
+    df['region'] = df['location'].apply(clean_region)
 
     # 2. Cleaning
     print("Cleaning data...")
-    
-    # Parse Price first
     df['price'] = df['raw_price'].astype(str).str.replace(r'[^\d]', '', regex=True)
     df['price'] = pd.to_numeric(df['price'], errors='coerce')
 
     print("\n--- Missing Values Check ---")
-    print(df[['year', 'mileage', 'price', 'brand']].isnull().sum())
+    print(df[['area', 'disposition', 'price', 'region']].isnull().sum())
     
-    # Remove rows with missing essential data
-    df = df.dropna(subset=['year', 'mileage', 'price', 'brand'])
-    
-    df = df[df['price'] > 1000] # Remove placeholders
+    df = df.dropna(subset=['area', 'price'])
+    df = df[df['price'] > 100000] # Realistic floor for apartments
 
-    # Filter Brands (Keep top 30)
-    top_brands = df['brand'].value_counts().head(30).index.tolist()
-    df = df[df['brand'].isin(top_brands)]
-
-    print(f"Data after cleaning: {len(df)} rows.")
-    print("Top Brands:", top_brands)
-
-    # 3. Generate Metadata (Valid Combinations)
+    # 3. Generate Metadata (Valid Options for UI)
     print("Generating metadata...")
-    metadata = {}
-    for brand in df['brand'].unique():
-        brand_df = df[df['brand'] == brand]
-        metadata[brand] = {
-            'fuels': sorted(brand_df['fuel'].unique().tolist()),
-            'transmissions': sorted(brand_df['transmission'].unique().tolist()),
-            'min_year': int(brand_df['year'].min()),
-            'max_year': int(brand_df['year'].max())
-        }
+    metadata = {
+        'dispositions': sorted(df['disposition'].unique().tolist()),
+        'regions': sorted(df['region'].unique().tolist()),
+        'min_area': int(df['area'].min()),
+        'max_area': int(df['area'].max())
+    }
 
     with open(METADATA_PATH, 'w', encoding='utf-8') as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
     print(f"Metadata saved to {METADATA_PATH}")
 
     # 4. Prepare for Training
-    features = ['year', 'mileage', 'brand', 'fuel', 'transmission']
+    features = ['area', 'disposition', 'region']
     X = df[features]
     y = df['price']
 
     # One-Hot Encoding
-    # Ensure consistent handling of categorical variables
-    # We use pd.get_dummies
-    X = pd.get_dummies(X, columns=['brand', 'fuel', 'transmission'], drop_first=False)
-    # Note: drop_first=False ensures we have explicit columns for all values, 
-    # which is safer for our inference mapping logic (we look for brand_BMW, not absence of others)
+    X = pd.get_dummies(X, columns=['disposition', 'region'], drop_first=False)
     
-    # Calculate average price per brand for sanity check
-    print("\n--- Average Price per Brand (Sample) ---")
-    print(df.groupby('brand')['price'].mean().head(5))
-
     # 5. Train Model
-    print("\nTraining Random Forest...")
+    print("\nTraining Random Forest Regressor...")
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X, y)
     print("Model training complete.")
