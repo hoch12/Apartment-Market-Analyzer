@@ -21,9 +21,11 @@ from src.utils.config_loader import ConfigLoader
 STATE_FILE = "scraper_state_apartments.json"
 
 def get_project_root():
+    """Return absolute path to project root."""
     return project_root
 
 def load_state():
+    """Load scraping state (last visited page) from JSON."""
     state_path = os.path.join(get_project_root(), STATE_FILE)
     if os.path.exists(state_path):
         with open(state_path, 'r') as f:
@@ -31,11 +33,21 @@ def load_state():
     return {"last_page": 0}
 
 def save_state(page_number):
+    """Save current scraping progress."""
     state_path = os.path.join(get_project_root(), STATE_FILE)
     with open(state_path, 'w') as f:
         json.dump({"last_page": page_number}, f)
 
 def get_existing_urls(csv_path):
+    """
+    Load set of already scraped URLs to avoid duplicates.
+
+    Args:
+        csv_path (str): Path to the CSV file.
+
+    Returns:
+        set: A set of URL strings.
+    """
     if not os.path.exists(csv_path):
         return set()
     try:
@@ -47,6 +59,15 @@ def get_existing_urls(csv_path):
     return set()
 
 def setup_driver(config):
+    """
+    Initialize Selenium WebDriver with configuration options.
+
+    Args:
+        config (dict): Global configuration dictionary.
+
+    Returns:
+        webdriver.Chrome: Initialized driver instance.
+    """
     options = webdriver.ChromeOptions()
     if config['driver']['headless']:
         options.add_argument('--headless')
@@ -57,6 +78,15 @@ def setup_driver(config):
     return driver
 
 def extract_apartment_data(element):
+    """
+    Parse a single apartment HTML element and extract details.
+
+    Args:
+        element (WebElement): The HTML element representing one ad card.
+
+    Returns:
+        dict: Extracted data (title, url, price, location) or None if failed.
+    """
     data = {}
     try:
         # Title & Link (Updated selector)
@@ -91,6 +121,9 @@ def extract_apartment_data(element):
         return None
 
 def main():
+    """
+    Main execution loop for the scraper.
+    """
     try:
         config = ConfigLoader.get_config()
     except Exception as e:

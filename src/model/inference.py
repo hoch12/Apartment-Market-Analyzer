@@ -6,7 +6,22 @@ import json
 from src.utils.config_loader import ConfigLoader
 
 class PricePredictor:
+    """
+    Handles model loading and price prediction inference.
+    
+    Attributes:
+        model (RandomForestRegressor): The trained sklearn model.
+        model_columns (list): List of feature names expected by the model.
+        metadata (dict): Additional metadata (regions, valid ranges) loaded from JSON.
+    """
     def __init__(self, model_path=None, columns_path=None):
+        """
+        Initialize the predictor and load model artifacts.
+
+        Args:
+            model_path (str, optional): Custom path to .pkl model file.
+            columns_path (str, optional): Custom path to .pkl columns file.
+        """
         self.model = None
         self.model_columns = None
         self.current_year = datetime.datetime.now().year
@@ -32,6 +47,7 @@ class PricePredictor:
             print(f"Warning: Could not load model: {e}")
 
     def load_model_data(self, model_path, columns_path):
+        """Load model and column definitions from disk."""
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model not found: {model_path}")
         if not os.path.exists(columns_path):
@@ -49,16 +65,29 @@ class PricePredictor:
              self.metadata = None
 
     def get_regions(self):
+        """Return list of valid regions."""
         if self.metadata:
             return self.metadata.get('regions', [])
         return self.model_config.get('regions', [])
 
     def get_dispositions(self):
+        """Return list of valid dispositions."""
         if self.metadata:
             return self.metadata.get('dispositions', [])
         return list(self.model_config.get('disposition_mapping', {}).keys())
 
     def predict_price(self, area, disposition, region):
+        """
+        Predict the price of an apartment.
+
+        Args:
+            area (float): Area in m^2.
+            disposition (str): Disposition category (e.g. '2+kk').
+            region (str): Region name (e.g. 'Praha').
+
+        Returns:
+            float: Predicted price.
+        """
         if self.model is None or self.model_columns is None:
             raise ValueError("Model not loaded")
 
@@ -88,7 +117,15 @@ class PricePredictor:
 
     def calculate_future_value(self, start_price, years=10, growth_rate=0.03):
         """
-        For real estate, we usually project GROWTH rather than depreciation.
+        Calculate future value projections based on compound annual growth rate.
+        
+        Args:
+            start_price (float): Initial price.
+            years (int): Number of years to project.
+            growth_rate (float): Annual growth rate (e.g. 0.03 for 3%).
+
+        Returns:
+            list[dict]: List of dicts with 'year' and 'price'.
         """
         future_values = []
         current_val = start_price

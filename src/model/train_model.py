@@ -17,6 +17,15 @@ COLUMNS_PATH = 'src/model/apartment_columns.pkl'
 METADATA_PATH = 'src/model/apartment_metadata.json'
 
 def parse_area(title):
+    """
+    Extract area in square meters from the title string.
+
+    Args:
+        title (str): Title containing area (e.g. "Prodej bytu 3+kk 75 m²").
+
+    Returns:
+        int or None: Extracted area or None if not found.
+    """
     # Matches "54 m²" or "54m2"
     match = re.search(r'(\d+)\s*m[²2]', str(title))
     if match:
@@ -24,6 +33,15 @@ def parse_area(title):
     return None
 
 def parse_disposition(title):
+    """
+    Extract apartment disposition (e.g. 2+kk) from the title.
+
+    Args:
+        title (str): Title string.
+
+    Returns:
+        str: Disposition string or 'Other'.
+    """
     # Matches "2+kk", "1+1", "3+1" etc.
     match = re.search(r'(\d\+[\w]{1,2})', str(title))
     if match:
@@ -31,6 +49,15 @@ def parse_disposition(title):
     return 'Other'
 
 def clean_region(location):
+    """
+    Map a specific location string (city/district) to a general Region (Kraj).
+
+    Args:
+        location (str): Raw location string.
+
+    Returns:
+        str: Normalized region name or 'Other'/'Zahraničí'.
+    """
     location = str(location)
     
     # Map of major cities/districts to regions
@@ -133,6 +160,15 @@ def clean_region(location):
     return 'Other'
 
 def train():
+    """
+    Main training pipeline:
+    1. Loads raw CSV data.
+    2. Extracts features (area, disposition, region).
+    3. Cleans data (removes outliers, parses prices).
+    4. Generates metadata for UI.
+    5. Trains RandomForestRegressor.
+    6. Saves model and artifacts.
+    """
     print("Loading apartment data...")
     if not os.path.exists(RAW_DATA_PATH):
         print(f"Error: {RAW_DATA_PATH} not found. Run scraper first.")

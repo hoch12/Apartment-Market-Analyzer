@@ -1,77 +1,77 @@
-# Apartment Market Analyzer - Uživatelský Manuál v1.0
+# Apartment Market Analyzer - User Manual v1.0
 
-**Apartment Market Analyzer** je desktopová aplikace pro analýzu realitního trhu v České republice. Slouží k odhadu tržní ceny bytů a predikci budoucího vývoje jejich hodnoty pomocí strojového učení.
+**Apartment Market Analyzer** is a desktop application for analyzing the real estate market in the Czech Republic. It serves to estimate the market price of apartments and predict the future development of their value using machine learning.
 
-## 🚀 Rychlý Start
+## 🚀 Quick Start
 
-### Požadavky
-- Python 3.8 nebo novější
-- Google Chrome (pro stahování dat)
+### Prerequisites
+- Python 3.8 or newer
+- Google Chrome (for data downloading)
 
-### Instalace
-1. Naklonujte repozitář (nebo stáhněte ZIP).
-2. Nainstalujte závislosti:
+### Installation
+1. Clone the repository (or download ZIP).
+2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-### Spuštění Aplikace
-Pro spuštění grafického rozhraní:
+### Running the Application
+To start the graphical interface:
 ```bash
 python src/app/gui_app.py
 ```
 
-## 🛠 Funkce a Použití
+## 🛠 Features and Usage
 
-### 1. Odhad Ceny
-V hlavním okně aplikace vyplňte:
-- **Kraj**: Lokalita, kde se byt nachází.
-- **Dispozice**: Typ bytu (např. 2+kk, 3+1).
-- **Plocha**: Užitná plocha v metrech čtverečních.
+### 1. Price Estimation
+In the main application window, fill in:
+- **Region**: Location where the apartment is situated.
+- **Disposition**: Type of apartment (e.g., 2+kk, 3+1).
+- **Area**: Usable area in square meters.
 
-Klikněte na **ANALYZOVAT TRŽNÍ CENU**. Aplikace zobrazí:
-- Odhadovanou aktuální tržní cenu.
-- Graf predikce vývoje hodnoty na 10 let dopředu.
+Click on **ANALYZE MARKET PRICE**. The application will display:
+- Estimated current market price.
+- Graph of value development prediction for 10 years ahead.
 
-> **Inteligentní Validace**: Aplikace vás upozorní, pokud zadáte nesmyslnou kombinaci (např. 6+kk o velikosti 20 m²).
+> **Smart Validation**: The application will warn you if you enter a nonsensical combination (e.g., 6+kk with a size of 20 m²).
 
-### 2. Stahování Dat (Scraping)
-Pokud chcete aktualizovat databázi inzerátů z reality.idnes.cz:
+### 2. Data Downloading (Scraping)
+If you want to update the database of ads from reality.idnes.cz:
 ```bash
 python src/scraper/reality_scraper.py
 ```
-- Skript otevře prohlížeč.
-- **DŮLEŽITÉ**: Musíte ručně potvrdit cookies v prohlížeči a stisknout ENTER v terminálu.
-- Data se uloží do `data/raw/apartments_raw_data.csv`.
+- The script opens a browser.
+- **IMPORTANT**: You must manually confirm cookies in the browser and press ENTER in the terminal.
+- Data is saved to `data/raw/apartments_raw_data.csv`.
 
-### 3. Trénování Modelu
-Po stažení nových dat můžete pře-trénovat model pro vyšší přesnost:
+### 3. Model Training
+After downloading new data, you can retrain the model for higher accuracy:
 ```bash
 python src/model/train_model.py
 ```
-- Model se uloží do `src/model/apartment_price_model.pkl`.
+- The model is saved to `src/model/apartment_price_model.pkl`.
 
-### 4. Analýza v Notebooku
-Pro detailní průzkum dat (grafy, statistiky) využijte Jupyter Notebook:
-- Otevřete soubor `notebooks/Apartment_Price_Analysis.ipynb` ve VS Code nebo Jupyter Lab.
+### 4. Analysis in Notebook
+For detailed data exploration (graphs, statistics), use Jupyter Notebook:
+- Open the file `notebooks/Apartment_Price_Analysis.ipynb` in VS Code or Jupyter Lab.
 
-## 🧠 Jak to funguje?
+## 🧠 How it works?
 
 ### Data
-Aplikace využívá data z tisíců inzerátů, která obsahují informace o:
-- Ceně
-- Dispozici (1+kk až 6+kk)
-- Výměře (m²)
-- Lokalitě (kraj/město)
+The application uses data from thousands of ads, which contain information about:
+- Price
+- Disposition (1+kk to 6+kk)
+- Area (m²)
+- Location (region/city)
 
-### Model Strojového Učení
-Používáme algoritmus **Random Forest Regressor**, který se učí vztahy mezi těmito parametry.
-- **Validace**: Data mimo logické meze (např. extrémně levné byty) jsou při trénování ignorována.
-- **Lokalita**: Města jsou automaticky mapována do příslušných krajů pro lepší generalizaci.
+### Machine Learning Model
+We use the **Random Forest Regressor** algorithm, which learns relationships between these parameters.
+- **Validation**: Data outside logical bounds (e.g., extremely cheap apartments) are ignored during training.
+- **Location**: Cities are automatically mapped to respective regions for better generalization.
 
-## ⚠️ Známá Omezení
-- Predikce pro velmi specifické lokality (malé vesnice) může být méně přesná než pro velká města.
-- Odhad budoucího vývoje je matematická projekce s fixním růstem (4 % ročně) a nezohledňuje makroekonomické šoky.
+## ⚠️ Known Limitations
+- Predictions for very specific locations (small villages) might be less accurate than for large cities.
+- Future development estimation is a mathematical projection with fixed growth (4% annually) and does not account for macroeconomic shocks.
 
 ---
-*Verze 1.0.0 | © 2026 Apartment Market Analyzer Team*
+*Version 1.0.0 | © 2026 Apartment Market Analyzer Team*

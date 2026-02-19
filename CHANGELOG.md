@@ -6,8 +6,9 @@ All notable changes to the "Apartment Market Analyzer" project will be documente
 ### **Gold Master Release**
 - **Full Release**: The project is now stable and fully pivoted to real estate analysis.
 - **Data**: Trained on a verified dataset of **5300+ apartments**.
-- **Documentation**: Use `docs/documentation.md` as the official user manual.
-- **Guide**: Added `docs/renaming_guide.md` for repository migration.
+- **Documentation**: Translated all documentation to English and added comprehensive run instructions.
+- **Code Quality**: Added docstrings to all source modules for better maintainability.
+- **Guide**: Added `docs/renaming_guide.md` for repository migration (Archived/Deleted).
 
 ## [0.9.0] - Pre-release
 ### Added

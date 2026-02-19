@@ -17,7 +17,18 @@ from src.model.inference import PricePredictor
 from src.utils.config_loader import ConfigLoader
 
 class ApartmentPriceApp:
+    """
+    Main GUI Application for Apartment Market Analyzer.
+    
+    Attributes:
+        root (tk.Tk): The main window object.
+        full_config (dict): Complete configuration loaded from JSON.
+        app_config (dict): App-specific configuration.
+        theme (dict): UI theme configuration.
+        predictor (PricePredictor): Instance of the ML model wrapper.
+    """
     def __init__(self, root):
+        """Initialize the application."""
         self.root = root
         
         # Load Config
@@ -44,6 +55,7 @@ class ApartmentPriceApp:
         self.create_widgets()
 
     def create_widgets(self):
+        """Create and arrange all UI widgets."""
         font_family = self.app_config.get("font_family", "Segoe UI")
         bg_primary = self.theme.get("bg_primary", "#1a1a1a")
         bg_secondary = self.theme.get("bg_secondary", "#2c3e50")
@@ -120,6 +132,16 @@ class ApartmentPriceApp:
         self.graph_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
 
     def validate_inputs(self, area, disp):
+        """
+        Check if the input area is reasonable for the given disposition.
+
+        Args:
+            area (float): Area in square meters.
+            disp (str): Disposition string (e.g. "2+kk").
+
+        Returns:
+            tuple: (is_valid: bool, error_message: str)
+        """
         # Approximate reasonable ranges based on data analysis
         # (min_area, max_area)
         limits = {
@@ -146,6 +168,10 @@ class ApartmentPriceApp:
         return True, ""
 
     def calculate_all(self):
+        """
+        Trigger the prediction process and update the UI with results.
+        Called when the analysis button is clicked.
+        """
         try:
             current_price = self.get_prediction()
             if current_price is None: return
@@ -159,6 +185,12 @@ class ApartmentPriceApp:
             messagebox.showerror("Chyba", str(e))
 
     def get_prediction(self):
+        """
+        Gather inputs, validate them, and perform inference using the model.
+
+        Returns:
+            float: Predicted price in CZK, or None if validation fails.
+        """
         try:
             area = float(self.area_entry.get())
         except ValueError:
@@ -190,6 +222,12 @@ class ApartmentPriceApp:
             return None
 
     def plot_future_trend(self, start_price):
+        """
+        Visualize the future value of the property using matplotlib.
+
+        Args:
+            start_price (float): The current predicted price.
+        """
         for widget in self.graph_frame.winfo_children():
             widget.destroy()
             
