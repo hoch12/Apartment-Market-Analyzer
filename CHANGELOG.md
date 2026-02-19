@@ -8,7 +8,7 @@ All notable changes to the "Apartment Market Analyzer" project will be documente
 - **Data**: Trained on a verified dataset of **5300+ apartments**.
 - **Documentation**: Translated all documentation to English and added comprehensive run instructions.
 - **Code Quality**: Added docstrings to all source modules for better maintainability.
-- **Guide**: Added `docs/renaming_guide.md` for repository migration (Archived/Deleted).
+
 
 ## [0.9.0] - Pre-release
 ### Added
