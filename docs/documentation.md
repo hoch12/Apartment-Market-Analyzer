@@ -75,7 +75,7 @@ The entire application behavior (GUI thresholds, model paths, dataset regions, S
 ## 🧠 How it works?
 
 ### Data
-The application uses data from thousands of ads, which contain information about:
+The application uses a robust dataset containing over **10,000 real estate ads**, which contain information about:
 - Price
 - Disposition (1+kk to 6+kk)
 - Area (m²)
