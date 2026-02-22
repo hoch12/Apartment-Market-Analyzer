@@ -22,6 +22,7 @@ Vše je spojeno univerzálním konfiguračním souborem `config.json`, díky kte
 Mít parametry přímo v kódu (hardcoding) je špatná praxe. Když chceme změnit barvu tlačítka, nebo URL adresu scraperu, museli bychom hledat na 50 místech v kódu. Napsali jsme třídu `ConfigLoader`.
 
 - **`config_loader.py`**: Aplikuje návrhový vzor "Singleton". Znamená to, že soubor se načte z disku pouze jednou při prvním zavolání a uloží se do paměti (proměnná `_config`). Zbytek aplikace k němu přistupuje bleskově. Cesty jsou zde řešeny pomocí relativních přesunů `os.path.dirname`, aby aplikace vždy našla `config.json` v kořeni projektu, ať už ji spouštíš z jakéhokoliv adresáře.
+- **Pseudo-komentáře v `config.json`**: Jelikož čistý formát JSON neakceptuje tradiční komentáře (jako `//` v C++ nebo `#` v Pythonu), byl v souboru uplatněn trik. Jsou tam přidány neaktivní klíče začínající `"_comment"`. Aplikace je při parsování prostě překročí, ale pro administrátora slouží jako detailní anglický návod (přímo v souboru), co která proměnná dělá a jak ji bezpečně měnit (např. limity GUI, rychlost delayů u scraperu apod.).
 
 ### B. Extrakce dat (`src/scraper/reality_scraper.py`)
 

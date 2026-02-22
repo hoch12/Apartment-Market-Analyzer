@@ -84,6 +84,10 @@ Start the GUI application:
 python src/app/gui_app.py
 ```
 
+### 5. Configuration (`config.json`)
+The application is fully configurable without needing to modify the underlying Python code. Open `config.json` in any text editor.
+> **Note**: JSON doesn't support standard comments, so we added `"_comment_..."` keys. These contain detailed English instructions directly inside the file explaining what each variable does (e.g., scraper delays, GUI area limits, random forest paths). You can safely edit the active keys based on those instructions.
+
 ---
 
 ## 📜 License

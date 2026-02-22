@@ -66,6 +66,12 @@ python src/model/train_model.py
 For detailed data exploration (graphs, statistics), use Jupyter Notebook:
 - Open the file `notebooks/Apartment_Price_Analysis.ipynb` in VS Code or Jupyter Lab.
 
+### 5. Configuration (`config.json`)
+The entire application behavior (GUI thresholds, model paths, dataset regions, Selenium webdriver rules) is centralized in `config.json`.
+- Inside the file, you will find extensive **English pseudo-comments** (keys starting with `"_comment"`).
+- These comments serve as a built-in manual telling you what is safe to edit and what it affects.
+- Feel free to modify the values (e.g. increase `num_pages` for the scraper, or change `bg_primary` hex color for the GUI) to fit your needs.
+
 ## 🧠 How it works?
 
 ### Data
