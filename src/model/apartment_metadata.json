@@ -30,6 +30,6 @@
     "Zlínský kraj",
     "Ústecký kraj"
   ],
-  "min_area": 11,
-  "max_area": 547
+  "min_area": 10,
+  "max_area": 553
 }
