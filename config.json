@@ -1,25 +1,36 @@
 {
+  "_comment_GLOBAL": "Main configuration file for Apartment Market Analyzer. Modify these values to adjust the application behavior without needing to change the Python code.",
   "scraper": {
+    "_comment": "Settings for the data collection script (web scraper).",
     "base_url": "https://reality.idnes.cz/s/prodej/byty/",
     "num_pages": 500,
+    "_comment_num_pages": "Change this to limit how many pages the scraper fetches. Increase for more data, decrease for faster testing/debugging.",
     "min_delay_seconds": 2,
-    "max_delay_seconds": 5
+    "max_delay_seconds": 5,
+    "_comment_delay_seconds": "Random delay range between individual requests. Keeps the bot stealthy and avoids IP bans."
   },
   "driver": {
+    "_comment": "Selenium WebDriver setup for the Chrome browser automation.",
     "headless": false,
+    "_comment_headless": "Change to true if you want the browser to run invisibly in the background. False is recommended to manually handle cookie dialogs.",
     "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
   },
   "paths": {
+    "_comment": "File paths used across the application. Only change these if you restructure the project folders.",
     "output_folder": "data/raw",
     "output_filename": "apartments_raw_data.csv",
+    "model_folder": "src/model",
     "model_filename": "apartment_price_model.pkl",
-    "columns_filename": "apartment_columns.pkl"
+    "columns_filename": "apartment_columns.pkl",
+    "metadata_filename": "apartment_metadata.json"
   },
   "app": {
+    "_comment": "Settings for the graphical user interface (GUI).",
     "window_size": "850x900",
     "title": "Real Estate Market Analyzer - Apartmány",
     "font_family": "Segoe UI",
     "theme": {
+      "_comment": "Colors used in the application. You can safely change these using standard Hex color codes (e.g., #FFFFFF for white).",
       "bg_primary": "#1a1a1a",
       "bg_secondary": "#2c3e50",
       "accent_color": "#e67e22",
@@ -28,10 +39,143 @@
       "text_muted": "#95a5a6",
       "button_fg": "white",
       "success_color": "#27ae60"
+    },
+    "future_trend": {
+      "_comment": "Default parameters for the future property value prediction graph.",
+      "years": 10,
+      "_comment_years": "How many years into the future the graph should forecast.",
+      "growth_rate": 0.04,
+      "_comment_growth_rate": "Expected annual growth rate. 0.04 represents 4% compounding growth per year."
+    },
+    "area_limits": {
+      "_comment": "Validation thresholds for the GUI input to prevent nonsensical combinations. Format: [minimum_area, maximum_area] in m2. Change these if the app falsely blocks legitimate inputs.",
+      "1+kk": [
+        10,
+        100
+      ],
+      "1+1": [
+        20,
+        80
+      ],
+      "2+kk": [
+        25,
+        120
+      ],
+      "2+1": [
+        30,
+        100
+      ],
+      "3+kk": [
+        40,
+        180
+      ],
+      "3+1": [
+        50,
+        150
+      ],
+      "4+kk": [
+        60,
+        300
+      ],
+      "4+1": [
+        70,
+        200
+      ],
+      "5+kk": [
+        90,
+        400
+      ],
+      "5+1": [
+        90,
+        300
+      ],
+      "6+kk": [
+        140,
+        600
+      ]
     }
   },
   "model": {
+    "_comment": "Machine learning model parameters, dataset boundaries, and metadata mappings.",
+    "training": {
+      "_comment": "Settings applied during model training via train_model.py.",
+      "min_price": 100000,
+      "_comment_min_price": "Minimum genuine price threshold. Filters out corrupted data or rental prices incorrectly scraped as sale prices.",
+      "rf_n_estimators": 100,
+      "_comment_rf_n_estimators": "Number of decision trees inside the Random Forest algorithm. Increase (e.g., 200, 300) for better accuracy at the cost of slower training.",
+      "rf_random_state": 42
+    },
+    "city_to_region": {
+      "_comment": "Dictionary used to map specific city names found in ad titles into their respective main regions. You can add more cities here to improve data parsing precision.",
+      "Praha": "Praha",
+      "Brno": "Jihomoravský kraj",
+      "Ostrava": "Moravskoslezský kraj",
+      "Plzeň": "Plzeňský kraj",
+      "Liberec": "Liberecký kraj",
+      "Olomouc": "Olomoucký kraj",
+      "České Budějovice": "Jihočeský kraj",
+      "Hradec Králové": "Královéhradecký kraj",
+      "Ústí nad Labem": "Ústecký kraj",
+      "Pardubice": "Pardubický kraj",
+      "Karlovy Vary": "Karlovarský kraj",
+      "Jihlava": "Kraj Vysočina",
+      "Zlín": "Zlínský kraj",
+      "Středočeský": "Středočeský kraj",
+      "Kladno": "Středočeský kraj",
+      "Mladá Boleslav": "Středočeský kraj",
+      "Příbram": "Středočeský kraj",
+      "Kolín": "Středočeský kraj",
+      "Benešov": "Středočeský kraj",
+      "Beroun": "Středočeský kraj",
+      "Mělník": "Středočeský kraj",
+      "Most": "Ústecký kraj",
+      "Děčín": "Ústecký kraj",
+      "Teplice": "Ústecký kraj",
+      "Chomutov": "Ústecký kraj",
+      "Frýdek-Místek": "Moravskoslezský kraj",
+      "Karviná": "Moravskoslezský kraj",
+      "Opava": "Moravskoslezský kraj",
+      "Havířov": "Moravskoslezský kraj",
+      "Třinec": "Moravskoslezský kraj",
+      "Znojmo": "Jihomoravský kraj",
+      "Břeclav": "Jihomoravský kraj",
+      "Hodonín": "Jihomoravský kraj",
+      "Vyškov": "Jihomoravský kraj",
+      "Blansko": "Jihomoravský kraj",
+      "Prostějov": "Olomoucký kraj",
+      "Přerov": "Olomoucký kraj",
+      "Šumperk": "Olomoucký kraj",
+      "Vsetín": "Zlínský kraj",
+      "Uherské Hradiště": "Zlínský kraj",
+      "Kroměříž": "Zlínský kraj",
+      "Tábor": "Jihočeský kraj",
+      "Písek": "Jihočeský kraj",
+      "Strakonice": "Jihočeský kraj",
+      "Jindřichův Hradec": "Jihočeský kraj",
+      "Český Krumlov": "Jihočeský kraj",
+      "Cheb": "Karlovarský kraj",
+      "Sokolov": "Karlovarský kraj",
+      "Třebíč": "Kraj Vysočina",
+      "Havlíčkův Brod": "Kraj Vysočina",
+      "Žďár nad Sázavou": "Kraj Vysočina",
+      "Pelhřimov": "Kraj Vysočina",
+      "Chrudim": "Pardubický kraj",
+      "Svitavy": "Pardubický kraj",
+      "Ústí nad Orlicí": "Pardubický kraj",
+      "Jablonec nad Nisou": "Liberecký kraj",
+      "Česká Lípa": "Liberecký kraj",
+      "Semily": "Liberecký kraj",
+      "Trutnov": "Královéhradecký kraj",
+      "Náchod": "Královéhradecký kraj",
+      "Jičín": "Královéhradecký kraj",
+      "Rychnov nad Kněžnou": "Královéhradecký kraj",
+      "Tachov": "Plzeňský kraj",
+      "Klatovy": "Plzeňský kraj",
+      "Domažlice": "Plzeňský kraj",
+      "Rokycany": "Plzeňský kraj"
+    },
     "disposition_mapping": {
+      "_comment": "Mapping of human-readable layouts (keys) to model column names (values). DO NOT change the values without retraining the model.",
       "1+kk": "disp_1kk",
       "1+1": "disp_11",
       "2+kk": "disp_2kk",

@@ -144,19 +144,7 @@ class ApartmentPriceApp:
         """
         # Approximate reasonable ranges based on data analysis
         # (min_area, max_area)
-        limits = {
-            "1+kk": (10, 100),
-            "1+1": (20, 80),
-            "2+kk": (25, 120),
-            "2+1": (30, 100),
-            "3+kk": (40, 180),
-            "3+1": (50, 150),
-            "4+kk": (60, 300),
-            "4+1": (70, 200),
-            "5+kk": (90, 400),
-            "5+1": (90, 300),
-            "6+kk": (140, 600)
-        }
+        limits = self.app_config.get("area_limits", {})
         
         if disp in limits:
             min_a, max_a = limits[disp]
@@ -236,7 +224,9 @@ class ApartmentPriceApp:
         accent_color = self.theme.get("accent_color", "#e67e22")
         success_color = self.theme.get("success_color", "#27ae60")
 
-        future_data = self.predictor.calculate_future_value(start_price, years=10, growth_rate=0.04) 
+        n_years = self.app_config.get("future_trend", {}).get("years", 10)
+        g_rate = self.app_config.get("future_trend", {}).get("growth_rate", 0.04)
+        future_data = self.predictor.calculate_future_value(start_price, years=n_years, growth_rate=g_rate) 
         years = [d['year'] for d in future_data]
         prices = [d['price'] for d in future_data]
 

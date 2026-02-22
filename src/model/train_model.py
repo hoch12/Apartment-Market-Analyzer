@@ -7,14 +7,22 @@ import json
 from sklearn.ensemble import RandomForestRegressor
 import sys
 
+# Init path to access shared utils
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(current_dir))
+sys.path.append(project_root)
+
+from src.utils.config_loader import ConfigLoader
+config = ConfigLoader.get_config()
+
 # Increase recursion depth if needed
 sys.setrecursionlimit(2000)
 
 # --- CONFIG ---
-RAW_DATA_PATH = 'data/raw/apartments_raw_data.csv'
-MODEL_PATH = 'src/model/apartment_price_model.pkl'
-COLUMNS_PATH = 'src/model/apartment_columns.pkl'
-METADATA_PATH = 'src/model/apartment_metadata.json'
+RAW_DATA_PATH = os.path.join(project_root, config['paths']['output_folder'], config['paths']['output_filename'])
+MODEL_PATH = os.path.join(project_root, config['paths']['model_folder'], config['paths']['model_filename'])
+COLUMNS_PATH = os.path.join(project_root, config['paths']['model_folder'], config['paths']['columns_filename'])
+METADATA_PATH = os.path.join(project_root, config['paths']['model_folder'], config['paths']['metadata_filename'])
 
 def parse_area(title):
     """
@@ -60,81 +68,7 @@ def clean_region(location):
     """
     location = str(location)
     
-    # Map of major cities/districts to regions
-    city_to_region = {
-        'Praha': 'Praha',
-        'Brno': 'Jihomoravský kraj',
-        'Ostrava': 'Moravskoslezský kraj',
-        'Plzeň': 'Plzeňský kraj',
-        'Liberec': 'Liberecký kraj',
-        'Olomouc': 'Olomoucký kraj',
-        'České Budějovice': 'Jihočeský kraj',
-        'Hradec Králové': 'Královéhradecký kraj',
-        'Ústí nad Labem': 'Ústecký kraj',
-        'Pardubice': 'Pardubický kraj',
-        'Karlovy Vary': 'Karlovarský kraj',
-        'Jihlava': 'Kraj Vysočina',
-        'Zlín': 'Zlínský kraj',
-        'Středočeský': 'Středočeský kraj',
-        'Kladno': 'Středočeský kraj',
-        'Mladá Boleslav': 'Středočeský kraj',
-        'Příbram': 'Středočeský kraj',
-        'Kolín': 'Středočeský kraj',
-        'Benešov': 'Středočeský kraj',
-        'Beroun': 'Středočeský kraj',
-        'Mělník': 'Středočeský kraj',
-        'Most': 'Ústecký kraj',
-        'Děčín': 'Ústecký kraj',
-        'Teplice': 'Ústecký kraj',
-        'Chomutov': 'Ústecký kraj',
-        'Frýdek-Místek': 'Moravskoslezský kraj',
-        'Karviná': 'Moravskoslezský kraj',
-        'Opava': 'Moravskoslezský kraj',
-        'Havířov': 'Moravskoslezský kraj',
-        'Třinec': 'Moravskoslezský kraj',
-        'Znojmo': 'Jihomoravský kraj',
-        'Břeclav': 'Jihomoravský kraj',
-        'Hodonín': 'Jihomoravský kraj',
-        'Vyškov': 'Jihomoravský kraj',
-        'Blansko': 'Jihomoravský kraj',
-        'Prostějov': 'Olomoucký kraj',
-        'Přerov': 'Olomoucký kraj',
-        'Šumperk': 'Olomoucký kraj',
-        'Vsetín': 'Zlínský kraj',
-        'Uherské Hradiště': 'Zlínský kraj',
-        'Kroměříž': 'Zlínský kraj',
-        'Tábor': 'Jihočeský kraj',
-        'Písek': 'Jihočeský kraj',
-        'Strakonice': 'Jihočeský kraj',
-        'Jindřichův Hradec': 'Jihočeský kraj',
-        'Český Krumlov': 'Jihočeský kraj',
-        'Cheb': 'Karlovarský kraj',
-        'Sokolov': 'Karlovarský kraj',
-        'Třebíč': 'Kraj Vysočina',
-        'Havlíčkův Brod': 'Kraj Vysočina',
-        'Žďár nad Sázavou': 'Kraj Vysočina',
-        'Pelhřimov': 'Kraj Vysočina',
-        'Chrudim': 'Pardubický kraj',
-        'Svitavy': 'Pardubický kraj',
-        'Ústí nad Orlicí': 'Pardubický kraj',
-        'Jablonec nad Nisou': 'Liberecký kraj',
-        'Česká Lípa': 'Liberecký kraj',
-        'Semily': 'Liberecký kraj',
-        'Trutnov': 'Královéhradecký kraj',
-        'Náchod': 'Královéhradecký kraj',
-        'Jičín': 'Královéhradecký kraj',
-        'Rychnov nad Kněžnou': 'Královéhradecký kraj',
-        'Tachov': 'Plzeňský kraj',
-        'Klatovy': 'Plzeňský kraj',
-        'Domažlice': 'Plzeňský kraj',
-        'Rokycany': 'Plzeňský kraj'
-    }
-
-    # First check explicit foreign countries to avoid misclassification
-    foreign_countries = ['Španělsko', 'Egypt', 'Albánie', 'Bulharsko', 'Chorvatsko', 'Slovensko', 'Rakousko', 'Německo', 'Kapverdy', 'Spojené arabské emiráty', 'Thajsko', 'Indonézie', 'Kypr', 'Černá Hora']
-    for country in foreign_countries:
-        if country in location:
-            return 'Zahraničí'
+    city_to_region = config['model']['city_to_region']
 
     # Check for cities in the location string
     for city, region in city_to_region.items():
@@ -192,7 +126,8 @@ def train():
     print(df[['area', 'disposition', 'price', 'region']].isnull().sum())
     
     df = df.dropna(subset=['area', 'price'])
-    df = df[df['price'] > 100000] # Realistic floor for apartments
+    min_price = config['model']['training']['min_price']
+    df = df[df['price'] > min_price] # Realistic floor for apartments
 
     # 3. Generate Metadata (Valid Options for UI)
     print("Generating metadata...")
@@ -217,7 +152,9 @@ def train():
     
     # 5. Train Model
     print("\nTraining Random Forest Regressor...")
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
+    n_est = config['model']['training']['rf_n_estimators']
+    r_state = config['model']['training']['rf_random_state']
+    model = RandomForestRegressor(n_estimators=n_est, random_state=r_state)
     model.fit(X, y)
     print("Model training complete.")
 

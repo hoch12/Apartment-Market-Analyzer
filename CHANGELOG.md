@@ -5,6 +5,8 @@ All notable changes to the "Apartment Market Analyzer" project will be documente
 ## [1.0.1] - 2026-02-22
 ### Changed
 - **Documentation**: Added instructions for virtual environment (`.venv`) setup and activation to `README.md` and `docs/documentation.md`.
+- **Configuration**: Extracted all hardcoded configuration parameters (limits, model paths, training constants, cities) from Python modules (`gui_app.py`, `train_model.py`, `inference.py`) into the central `config.json` file.
+- **Config Documentation**: Added detailed english pseudo-comments directly inside `config.json` explaining what each field does and how safely users can tweak the app behavior. Removed unused `foreign_countries` configuration logic limit.
 
 ## [1.0.0] - 2026-02-19
 ### **Gold Master Release**

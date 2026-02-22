@@ -36,7 +36,8 @@ class PricePredictor:
         model_filename = self.paths_config.get('model_filename', 'apartment_price_model.pkl')
         columns_filename = self.paths_config.get('columns_filename', 'apartment_columns.pkl')
         
-        base_model_path = os.path.join(root, 'src', 'model')
+        model_folder = self.paths_config.get('model_folder', os.path.join('src', 'model'))
+        base_model_path = os.path.join(root, model_folder)
         
         final_model_path = model_path or os.path.join(base_model_path, model_filename)
         final_columns_path = columns_path or os.path.join(base_model_path, columns_filename)
