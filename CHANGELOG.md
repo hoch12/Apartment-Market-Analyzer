@@ -2,6 +2,10 @@
 
 All notable changes to the "Apartment Market Analyzer" project will be documented in this file.
 
+## [1.0.1] - 2026-02-22
+### Changed
+- **Documentation**: Added instructions for virtual environment (`.venv`) setup and activation to `README.md` and `docs/documentation.md`.
+
 ## [1.0.0] - 2026-02-19
 ### **Gold Master Release**
 - **Full Release**: The project is now stable and fully pivoted to real estate analysis.
